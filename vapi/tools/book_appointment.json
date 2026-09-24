@@ -1,0 +1,46 @@
+{
+  "type": "function",
+  "async": false,
+  "function": {
+    "name": "book_appointment",
+    "description": "Book an appointment for a registered patient in one of the slots returned by get_available_slots.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patient_id": {
+          "type": "string",
+          "description": "patient_id of the registered patient"
+        },
+        "slot_id": {
+          "type": "string",
+          "description": "slot_id exactly as returned by get_available_slots"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Short reason for the visit, e.g. new patient checkup"
+        }
+      },
+      "required": [
+        "patient_id",
+        "slot_id"
+      ]
+    }
+  },
+  "server": {
+    "url": "https://patient-voice-ai-agent.vercel.app/vapi/webhook",
+    "timeoutSeconds": 20,
+    "headers": {
+      "x-vapi-secret": "<VAPI_WEBHOOK_SECRET, set in the Vapi dashboard, never committed>"
+    }
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "Let me book that for you."
+    },
+    {
+      "type": "request-failed",
+      "content": "I'm sorry, I'm having trouble with our system right now."
+    }
+  ]
+}

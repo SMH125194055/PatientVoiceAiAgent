@@ -1,0 +1,30 @@
+{
+  "type": "function",
+  "async": false,
+  "function": {
+    "name": "lookup_patient",
+    "description": "Check whether a patient record already exists for a phone number. Call with no arguments at the start of the call to use caller ID, or pass phone_number if the caller gives a different number.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "phone_number": {
+          "type": "string",
+          "description": "10-digit U.S. phone number to look up (optional; defaults to caller ID)"
+        }
+      }
+    }
+  },
+  "server": {
+    "url": "https://patient-voice-ai-agent.vercel.app/vapi/webhook",
+    "timeoutSeconds": 20,
+    "headers": {
+      "x-vapi-secret": "<VAPI_WEBHOOK_SECRET, set in the Vapi dashboard, never committed>"
+    }
+  },
+  "messages": [
+    {
+      "type": "request-failed",
+      "content": "I'm sorry, I'm having trouble with our system right now."
+    }
+  ]
+}

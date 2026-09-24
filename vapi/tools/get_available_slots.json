@@ -1,0 +1,29 @@
+{
+  "type": "function",
+  "async": false,
+  "function": {
+    "name": "get_available_slots",
+    "description": "Get upcoming open appointment times for a first visit.",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "server": {
+    "url": "https://patient-voice-ai-agent.vercel.app/vapi/webhook",
+    "timeoutSeconds": 20,
+    "headers": {
+      "x-vapi-secret": "<VAPI_WEBHOOK_SECRET, set in the Vapi dashboard, never committed>"
+    }
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "Let me check the schedule."
+    },
+    {
+      "type": "request-failed",
+      "content": "I'm sorry, I'm having trouble with our system right now."
+    }
+  ]
+}

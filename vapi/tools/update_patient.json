@@ -1,0 +1,107 @@
+{
+  "type": "function",
+  "async": false,
+  "function": {
+    "name": "update_patient",
+    "description": "Update an EXISTING patient record found with lookup_patient, after the caller verified their date of birth and confirmed the changes. Send only the fields that changed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patient_id": {
+          "type": "string",
+          "description": "patient_id returned by lookup_patient"
+        },
+        "first_name": {
+          "type": "string",
+          "description": "Patient's first name, correctly spelled"
+        },
+        "last_name": {
+          "type": "string",
+          "description": "Patient's last name, spelled as the caller spelled it"
+        },
+        "date_of_birth": {
+          "type": "string",
+          "description": "Date of birth in MM/DD/YYYY format"
+        },
+        "sex": {
+          "type": "string",
+          "description": "Patient's sex",
+          "enum": [
+            "Male",
+            "Female",
+            "Other",
+            "Decline to Answer"
+          ]
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "10-digit U.S. phone number, digits only, e.g. 5125550142"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address (optional)"
+        },
+        "address_line_1": {
+          "type": "string",
+          "description": "Street address, e.g. 742 Evergreen Terrace"
+        },
+        "address_line_2": {
+          "type": "string",
+          "description": "Apartment, suite, or unit (optional)"
+        },
+        "city": {
+          "type": "string",
+          "description": "City"
+        },
+        "state": {
+          "type": "string",
+          "description": "2-letter U.S. state abbreviation, e.g. TX"
+        },
+        "zip_code": {
+          "type": "string",
+          "description": "5-digit ZIP or ZIP+4, e.g. 78701 or 78701-1234"
+        },
+        "insurance_provider": {
+          "type": "string",
+          "description": "Insurance company name (optional)"
+        },
+        "insurance_member_id": {
+          "type": "string",
+          "description": "Insurance member or subscriber ID, letters and numbers (optional)"
+        },
+        "preferred_language": {
+          "type": "string",
+          "description": "Preferred language (optional, defaults to English)"
+        },
+        "emergency_contact_name": {
+          "type": "string",
+          "description": "Emergency contact's full name (optional)"
+        },
+        "emergency_contact_phone": {
+          "type": "string",
+          "description": "Emergency contact's 10-digit U.S. phone number (optional)"
+        }
+      },
+      "required": [
+        "patient_id"
+      ]
+    }
+  },
+  "server": {
+    "url": "https://patient-voice-ai-agent.vercel.app/vapi/webhook",
+    "timeoutSeconds": 20,
+    "headers": {
+      "x-vapi-secret": "<VAPI_WEBHOOK_SECRET, set in the Vapi dashboard, never committed>"
+    }
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "One moment while I update that."
+    },
+    {
+      "type": "request-failed",
+      "content": "I'm sorry, I'm having trouble with our system right now."
+    }
+  ]
+}

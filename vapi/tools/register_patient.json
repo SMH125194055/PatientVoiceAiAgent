@@ -1,0 +1,111 @@
+{
+  "type": "function",
+  "async": false,
+  "function": {
+    "name": "register_patient",
+    "description": "Save a NEW patient record. Only call after reading all details back to the caller and receiving a clear confirmation.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": "string",
+          "description": "Patient's first name, correctly spelled"
+        },
+        "last_name": {
+          "type": "string",
+          "description": "Patient's last name, spelled as the caller spelled it"
+        },
+        "date_of_birth": {
+          "type": "string",
+          "description": "Date of birth in MM/DD/YYYY format"
+        },
+        "sex": {
+          "type": "string",
+          "description": "Patient's sex",
+          "enum": [
+            "Male",
+            "Female",
+            "Other",
+            "Decline to Answer"
+          ]
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "10-digit U.S. phone number, digits only, e.g. 5125550142"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address (optional)"
+        },
+        "address_line_1": {
+          "type": "string",
+          "description": "Street address, e.g. 742 Evergreen Terrace"
+        },
+        "address_line_2": {
+          "type": "string",
+          "description": "Apartment, suite, or unit (optional)"
+        },
+        "city": {
+          "type": "string",
+          "description": "City"
+        },
+        "state": {
+          "type": "string",
+          "description": "2-letter U.S. state abbreviation, e.g. TX"
+        },
+        "zip_code": {
+          "type": "string",
+          "description": "5-digit ZIP or ZIP+4, e.g. 78701 or 78701-1234"
+        },
+        "insurance_provider": {
+          "type": "string",
+          "description": "Insurance company name (optional)"
+        },
+        "insurance_member_id": {
+          "type": "string",
+          "description": "Insurance member or subscriber ID, letters and numbers (optional)"
+        },
+        "preferred_language": {
+          "type": "string",
+          "description": "Preferred language (optional, defaults to English)"
+        },
+        "emergency_contact_name": {
+          "type": "string",
+          "description": "Emergency contact's full name (optional)"
+        },
+        "emergency_contact_phone": {
+          "type": "string",
+          "description": "Emergency contact's 10-digit U.S. phone number (optional)"
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "sex",
+        "phone_number",
+        "address_line_1",
+        "city",
+        "state",
+        "zip_code"
+      ]
+    }
+  },
+  "server": {
+    "url": "https://patient-voice-ai-agent.vercel.app/vapi/webhook",
+    "timeoutSeconds": 20,
+    "headers": {
+      "x-vapi-secret": "<VAPI_WEBHOOK_SECRET, set in the Vapi dashboard, never committed>"
+    }
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "One moment while I save that."
+    },
+    {
+      "type": "request-failed",
+      "content": "I'm sorry, I'm having trouble with our system right now."
+    }
+  ]
+}
