@@ -70,9 +70,10 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(StarletteHTTPException)
-    async def _http_error(_: Request, exc: StarletteHTTPException):
-        code = "not_found" if exc.status_code == 404 else "http_error"
-        return error_response(exc.status_code, code, str(exc.detail))
+    async def _http_error(request: Request, exc: StarletteHTTPException):
+        if exc.status_code == 404:
+            return error_response(404, "not_found", f"No route for {request.method} {request.url.path}")
+        return error_response(exc.status_code, "http_error", str(exc.detail))
 
     @app.exception_handler(IntegrityError)
     async def _integrity_error(_: Request, exc: IntegrityError):

@@ -36,9 +36,9 @@ class Settings:
         # Shared secret Vapi sends in the `x-vapi-secret` header on every webhook.
         self.vapi_webhook_secret = os.getenv("VAPI_WEBHOOK_SECRET", "").strip()
         # Mock appointment slots are generated in the clinic's local time.
-        self.clinic_timezone = os.getenv("CLINIC_TIMEZONE", "America/New_York")
+        self.clinic_timezone = os.getenv("CLINIC_TIMEZONE", "").strip() or "America/New_York"
         # Shown on the dashboard so reviewers know which number to call.
-        self.intake_phone_number = os.getenv("INTAKE_PHONE_NUMBER", "+17579798389")
+        self.intake_phone_number = os.getenv("INTAKE_PHONE_NUMBER", "").strip() or "+17579798389"
 
 
 settings = Settings()
