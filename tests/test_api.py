@@ -105,6 +105,11 @@ def test_health_and_dashboard(client):
     assert client.get("/health").json()["data"]["status"] == "ok"
     assert "Patient registry" in client.get("/").text
 
+def test_vercel_rewrite_paths_are_restored(client, patient):
+    assert client.get("/api/index?__path=health").json()["data"]["status"] == "ok"
+    res = client.get("/api/index?__path=patients&last_name=doe")
+    assert len(res.json()["data"]) == 1
+    assert "Patient registry" in client.get("/api/index?__path=").text
 
 # --------------------------------------------------------------------------- #
 # Vapi webhook + voice tools

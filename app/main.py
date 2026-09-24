@@ -14,6 +14,7 @@ from fastapi import FastAPI
 
 from app.errors import register_exception_handlers
 from app.routes import pages, patients, vapi
+from app.vercel_paths import VercelPathMiddleware
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -29,4 +30,5 @@ app = FastAPI(
 register_exception_handlers(app)
 app.include_router(patients.router)
 app.include_router(vapi.router)
+app.add_middleware(VercelPathMiddleware)
 app.include_router(pages.router)
