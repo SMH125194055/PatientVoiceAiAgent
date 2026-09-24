@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient registry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1c2a33;
+    --muted: #5a6a71;
+    --paper: #f3f6f5;
+    --surface: #ffffff;
+    --line: #d8e0dd;
+    --accent: #0e6e62;
+    --accent-soft: #e2f0ed;
+    --alert: #a33a2b;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Public Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.5; font-variant-numeric: tabular-nums;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* The line to call is the most important thing on the page. */
+  .intake { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  .intake h1 { font-size: 15px; font-weight: 600; margin: 0 0 6px; color: var(--muted); }
+  .intake .number { display: block; font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; color: var(--ink); text-decoration: none; }
+  .intake .number:hover { color: var(--accent); }
+  .intake p { margin: 0; max-width: 46ch; color: var(--muted); }
+
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 24px 0 16px; }
+  .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .tabs button { border: 0; background: none; font: inherit; font-weight: 600; color: var(--muted); padding: 6px 16px; border-radius: 999px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: #fff; }
+  .status { color: var(--muted); font-size: 13px; display: flex; gap: 12px; align-items: center; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .filters input { font: inherit; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); min-width: 170px; color: var(--ink); }
+  button.primary, button.ghost { font: inherit; font-weight: 600; padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+  button.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+  .layout.open { grid-template-columns: minmax(0, 1fr) 380px; }
+  .table-box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr.row { cursor: pointer; }
+  tbody tr.row:hover td { background: var(--paper); }
+  tbody tr.row[aria-current="true"] td { background: var(--accent-soft); }
+  .name { font-weight: 600; }
+  .empty { padding: 40px 16px; text-align: center; color: var(--muted); white-space: normal; }
+  .error { color: var(--alert); padding: 12px 16px; }
+
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  .panel header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+  .panel h2 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
+  .panel h3 { font-size: 15px; margin: 24px 0 8px; }
+  .panel .id { font-size: 12px; color: var(--muted); word-break: break-all; margin-top: 4px; }
+  dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; margin: 16px 0 0; }
+  dt { color: var(--muted); }
+  dd { margin: 0; word-break: break-word; }
+  .item { border-top: 1px solid var(--line); padding: 10px 0; }
+  details summary { cursor: pointer; font-weight: 600; margin-top: 6px; }
+  pre { white-space: pre-wrap; font: inherit; font-size: 13px; background: var(--paper); padding: 12px; border-radius: var(--radius-sm); max-height: 280px; overflow-y: auto; }
+  .muted { color: var(--muted); }
+
+  @media (max-width: 900px) {
+    .layout.open { grid-template-columns: minmax(0, 1fr); }
+    .panel { position: static; max-height: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="intake">
+    <div>
+      <h1>Patient registry</h1>
+      <a class="number" id="intake-number" href="tel:{{INTAKE_PHONE}}">{{INTAKE_PHONE}}</a>
+    </div>
+    <p>Call this number to register a patient by voice. New and updated records show up here automatically.</p>
+  </section>
+
+  <div class="toolbar">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-patients" aria-selected="true">Patients</button>
+      <button role="tab" id="tab-calls" aria-selected="false">Calls</button>
+    </div>
+    <div class="status"><span id="updated">Loading</span><button class="ghost" id="refresh">Refresh</button></div>
+  </div>
+
+  <div id="view-patients">
+    <form class="filters" id="filters">
+      <input name="last_name" placeholder="Last name" aria-label="Last name">
+      <input name="date_of_birth" placeholder="Date of birth (MM/DD/YYYY)" aria-label="Date of birth">
+      <input name="phone_number" placeholder="Phone number" aria-label="Phone number">
+      <button class="primary" type="submit">Search</button>
+      <button class="ghost" type="button" id="clear">Clear</button>
+    </form>
+    <div class="layout" id="layout">
+      <div class="table-box">
+        <table>
+          <thead><tr><th>Name</th><th>Date of birth</th><th>Sex</th><th>Phone</th><th>City</th><th>Insurance</th><th>Registered</th></tr></thead>
+          <tbody id="patients"></tbody>
+        </table>
+      </div>
+      <aside class="panel" id="panel" hidden></aside>
+    </div>
+  </div>
+
+  <div id="view-calls" hidden>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>Time</th><th>Caller</th><th>Patient</th><th>Duration</th><th>Ended because</th><th>Summary</th></tr></thead>
+        <tbody id="calls"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { patients: [], selected: null, filters: {} };
+
+function el(tag, props = {}, children = []) {
+  const node = document.createElement(tag);
+  Object.entries(props).forEach(([k, v]) => {
+    if (k === "text") node.textContent = v;  // textContent only: no HTML injection
+    else if (k === "class") node.className = v;
+    else node.setAttribute(k, v);
+  });
+  [].concat(children).forEach((c) => c && node.append(c));
+  return node;
+}
+
+function fmtPhone(p) {
+  if (!p) return "";
+  const d = String(p).replace(/\D/g, "").slice(-10);
+  return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
+}
+function fmtDate(iso) { return iso ? new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : ""; }
+function fmtDuration(s) { if (s == null) return ""; const m = Math.floor(s / 60); return `${m}m ${Math.round(s % 60)}s`; }
+
+async function api(path) {
+  const res = await fetch(path);
+  const body = await res.json();
+  if (body.error) {
+    const detail = (body.error.details || []).map((d) => `${d.field} ${d.message}`).join("; ");
+    throw new Error(detail || body.error.message);
+  }
+  return body.data;
+}
+
+function stamp() { $("updated").textContent = "Updated " + new Date().toLocaleTimeString(); }
+
+async function loadPatients() {
+  const params = new URLSearchParams(Object.entries(state.filters).filter(([, v]) => v));
+  params.set("limit", "500");
+  const tbody = $("patients");
+  try {
+    state.patients = await api("/patients?" + params);
+    tbody.replaceChildren(...(state.patients.length ? state.patients.map(patientRow) :
+      [el("tr", {}, el("td", { class: "empty", colspan: "7", text: "No patients yet. Call the number above to register the first one." }))]));
+    stamp();
+  } catch (e) {
+    tbody.replaceChildren(el("tr", {}, el("td", { class: "error", colspan: "7", text: "Could not load patients: " + e.message })));
+  }
+}
+
+function patientRow(p) {
+  const row = el("tr", { class: "row", tabindex: "0" }, [
+    el("td", { class: "name", text: `${p.first_name} ${p.last_name}` }),
+    el("td", { text: p.date_of_birth }),
+    el("td", { text: p.sex }),
+    el("td", { text: fmtPhone(p.phone_number) }),
+    el("td", { text: `${p.city}, ${p.state}` }),
+    el("td", { text: p.insurance_provider || "None given" }),
+    el("td", { text: fmtDate(p.created_at) }),
+  ]);
+  if (state.selected === p.patient_id) row.setAttribute("aria-current", "true");
+  const open = () => openPatient(p.patient_id);
+  row.addEventListener("click", open);
+  row.addEventListener("keydown", (e) => { if (e.key === "Enter") open(); });
+  return row;
+}
+
+async function openPatient(id) {
+  state.selected = id;
+  document.querySelectorAll("tr.row").forEach((r) => r.removeAttribute("aria-current"));
+  const panel = $("panel");
+  panel.hidden = false;
+  $("layout").classList.add("open");
+  panel.replaceChildren(el("p", { class: "muted", text: "Loading record" }));
+  try {
+    const [p, calls, appts] = await Promise.all([
+      api(`/patients/${id}`), api(`/patients/${id}/calls`), api(`/patients/${id}/appointments`),
+    ]);
+    const fields = [
+      ["Date of birth", p.date_of_birth], ["Sex", p.sex], ["Phone", fmtPhone(p.phone_number)],
+      ["Email", p.email], ["Address", [p.address_line_1, p.address_line_2].filter(Boolean).join(", ")],
+      ["City", `${p.city}, ${p.state} ${p.zip_code}`], ["Language", p.preferred_language],
+      ["Insurance", p.insurance_provider], ["Member ID", p.insurance_member_id],
+      ["Emergency contact", p.emergency_contact_name ? `${p.emergency_contact_name} ${fmtPhone(p.emergency_contact_phone)}` : null],
+      ["Registered", fmtDate(p.created_at)], ["Last updated", fmtDate(p.updated_at)],
+    ];
+    const close = el("button", { class: "ghost", text: "Close" });
+    close.addEventListener("click", () => {
+      panel.hidden = true; $("layout").classList.remove("open"); state.selected = null;
+      document.querySelectorAll("tr.row").forEach((r) => r.removeAttribute("aria-current"));
+    });
+    panel.replaceChildren(
+      el("header", {}, [el("div", {}, [el("h2", { text: `${p.first_name} ${p.last_name}` }), el("div", { class: "id", text: p.patient_id })]), close]),
+      el("dl", {}, fields.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v || "Not provided" })])),
+      el("h3", { text: "Appointments" }),
+      ...(appts.length ? appts.map((a) => el("div", { class: "item", text: `${fmtDate(a.scheduled_at)}${a.reason ? " for " + a.reason : ""}` }))
+        : [el("p", { class: "muted", text: "None booked." })]),
+      el("h3", { text: "Calls" }),
+      ...(calls.length ? calls.map(callItem) : [el("p", { class: "muted", text: "No linked calls. Records created through the API have no call." })]),
+    );
+    document.querySelectorAll("tr.row").forEach((r, i) => {
+      if (state.patients[i] && state.patients[i].patient_id === id) r.setAttribute("aria-current", "true");
+    });
+  } catch (e) {
+    panel.replaceChildren(el("p", { class: "error", text: "Could not load this record: " + e.message }));
+  }
+}
+
+function callItem(c) {
+  return el("div", { class: "item" }, [
+    el("div", { text: `${fmtDate(c.created_at)} (${fmtDuration(c.duration_seconds) || "duration unknown"})` }),
+    el("div", { class: "muted", text: c.summary || "No summary." }),
+    c.transcript ? el("details", {}, [el("summary", { text: "Transcript" }), el("pre", { text: c.transcript })]) : null,
+  ]);
+}
+
+async function loadCalls() {
+  const tbody = $("calls");
+  try {
+    const calls = await api("/calls?limit=100");
+    const names = Object.fromEntries(state.patients.map((p) => [p.patient_id, `${p.first_name} ${p.last_name}`]));
+    tbody.replaceChildren(...(calls.length ? calls.map((c) => el("tr", {}, [
+      el("td", { text: fmtDate(c.created_at) }),
+      el("td", { text: fmtPhone(c.caller_number) }),
+      el("td", { text: c.patient_id ? (names[c.patient_id] || "Registered patient") : "Not registered" }),
+      el("td", { text: fmtDuration(c.duration_seconds) }),
+      el("td", { text: c.ended_reason || "" }),
+      el("td", { text: (c.summary || "").slice(0, 120) }),
+    ])) : [el("tr", {}, el("td", { class: "empty", colspan: "6", text: "No calls yet." }))]));
+    stamp();
+  } catch (e) {
+    tbody.replaceChildren(el("tr", {}, el("td", { class: "error", colspan: "6", text: "Could not load calls: " + e.message })));
+  }
+}
+
+function showTab(name) {
+  const calls = name === "calls";
+  $("tab-patients").setAttribute("aria-selected", String(!calls));
+  $("tab-calls").setAttribute("aria-selected", String(calls));
+  $("view-patients").hidden = calls;
+  $("view-calls").hidden = !calls;
+  calls ? loadCalls() : loadPatients();
+}
+
+$("tab-patients").addEventListener("click", () => showTab("patients"));
+$("tab-calls").addEventListener("click", () => showTab("calls"));
+$("refresh").addEventListener("click", () => ($("view-calls").hidden ? loadPatients() : loadCalls()));
+$("filters").addEventListener("submit", (e) => {
+  e.preventDefault();
+  state.filters = Object.fromEntries(new FormData(e.target));
+  loadPatients();
+});
+$("clear").addEventListener("click", () => { $("filters").reset(); state.filters = {}; loadPatients(); });
+
+const n = $("intake-number");
+n.textContent = fmtPhone(n.textContent) || n.textContent;
+
+loadPatients();
+setInterval(() => { if (!document.hidden) ($("view-calls").hidden ? loadPatients() : loadCalls()); }, 20000);
+</script>
+</body>
+</html>
